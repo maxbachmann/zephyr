@@ -68,6 +68,38 @@ uintptr_t pcie_get_mbar(pcie_bdf_t bdf, unsigned int index)
 	return PCIE_CONF_BAR_ADDR(addr);
 }
 
+size_t pcie_get_mbar_size(pcie_bdf_t bdf, unsigned int index)
+{
+	uint32_t reg, bar, addr;
+	size_t size = 0;
+
+	reg = PCIE_CONF_BAR0;
+	for (bar = 0; bar < index && reg <= PCIE_CONF_BAR5; bar++) {
+		if (PCIE_CONF_BAR_64(pcie_conf_read(bdf, reg++))) {
+			reg++;
+		}
+	}
+
+	if (bar == index) {
+		addr = pcie_conf_read(bdf, reg);
+		pcie_conf_write(bdf, reg, 0xFFFFFFFF)
+		size = pcie_conf_read(bdf, reg);
+		pcie_conf_write(bdf, reg, addr);
+
+		if (IS_ENABLED(CONFIG_64BIT) && PCIE_CONF_BAR_64(addr)) {
+			reg++;
+			addr = pcie_conf_read(bdf, reg);
+			pcie_conf_write(bdf, reg, 0xFFFFFFFF)
+			size |= ((uint64_t)pcie_conf_read(bdf, reg)) << 32;
+			pcie_conf_write(bdf, reg, addr);
+		}
+
+		size = ~PCIE_CONF_BAR_ADDR(size) + 1
+	}
+
+	return size;
+}
+
 unsigned int pcie_wired_irq(pcie_bdf_t bdf)
 {
 	uint32_t data = pcie_conf_read(bdf, PCIE_CONF_INTR);

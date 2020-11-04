@@ -85,6 +85,20 @@ extern bool pcie_probe(pcie_bdf_t bdf, pcie_id_t id);
 extern uintptr_t pcie_get_mbar(pcie_bdf_t bdf, unsigned int index);
 
 /**
+ * @brief Get the size of the nth memory-mapped region assigned to an endpoint.
+ * @param bdf the PCI(e) endpoint
+ * @param index (0-based) index
+ * @return the size, or 0 if nonexistent.
+ *
+ * A PCI(e) endpoint has 0 or more memory-mapped regions. This function
+ * allows the caller to enumerate them by calling with index=0..n. If
+ * 0 is returned, there are no further regions. The indices
+ * are order-preserving with respect to the endpoint BARs: e.g., index 0
+ * will return the size of the lowest-numbered memory BAR on the endpoint.
+ */
+extern size_t pcie_get_mbar_size(pcie_bdf_t bdf, unsigned int index);
+
+/**
  * @brief Set or reset bits in the endpoint command/status register.
  *
  * @param bdf the PCI(e) endpoint
