@@ -9,6 +9,7 @@ on:
   push:
     branches:
       - refs/tags/*
+      - 'master'
 
 jobs:
   get_version:
